@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         yt-toggle-autoplay-on-idle
 // @namespace    https://cybergene.dev/
-// @version      1.0
+// @version      1.1
 // @description  一定時間無操作ならYouTubeの次動画再生を止める
 // @match        https://www.youtube.com/*
 // @grant        none
@@ -13,7 +13,7 @@
 (function () {
     'use strict';
 
-    const idleMinutes = 1;
+    const idleMinutes = 90;
 
     let lastActivity = Date.now();
 
@@ -37,5 +37,5 @@
                 console.log('[YouTube AutoStop] 自動再生をオフにしました（無操作検出）');
             }
         }
-    }, 10000);
+    }, 600000);
 })();

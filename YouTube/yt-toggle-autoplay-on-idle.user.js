@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         yt-toggle-autoplay-on-idle
 // @namespace    https://cybergene.dev/
-// @version      1.1
+// @version      1.2
 // @description  一定時間無操作ならYouTubeの次動画再生を止める
 // @match        https://www.youtube.com/watch?v=*
 // @match        https://www.youtube.com/watch?*

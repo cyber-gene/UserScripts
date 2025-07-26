@@ -4,7 +4,6 @@
 // @version      1.2
 // @description  一定時間無操作ならYouTubeの次動画再生を止める
 // @match        https://www.youtube.com/watch?v=*
-// @match        https://www.youtube.com/watch?*
 // @match        https://www.youtube.com/shorts/*
 // @grant        none
 // @author       cybergene

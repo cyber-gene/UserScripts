@@ -39,7 +39,7 @@
 
       // Get the video element to check if it's playing
       const video = document.querySelector("video");
-      const isVideoPlaying = video && !video.paused;
+      const isVideoPlaying = video && !video.paused && !video.ended && video.readyState >= 2;
 
       if (
         autoplayToggle &&

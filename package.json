@@ -1,0 +1,13 @@
+{
+  "name": "TampermonkeyUserScripts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:cyber-gene/TampermonkeyUserScripts.git",
+  "author": "cybergene <cybergene@protonmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "eslint": "^9.32.0",
+    "globals": "^16.3.0"
+  }
+}

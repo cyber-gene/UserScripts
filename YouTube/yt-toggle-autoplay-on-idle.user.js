@@ -2,7 +2,7 @@
 // @name         yt-toggle-autoplay-on-idle
 // @namespace    https://cybergene.dev/
 // @version      1.2
-// @description  一定時間無操作ならYouTubeの次動画再生を止める
+// @description  Stops YouTube autoplay after a period of inactivity
 // @match        https://www.youtube.com/watch?v=*
 // @match        https://www.youtube.com/shorts/*
 // @grant        none
@@ -15,6 +15,57 @@
   "use strict";
 
   const idleMinutes = 90;
+
+  // Function to show on-screen notification that stays visible until user dismisses it
+  // This is designed for users who might fall asleep, so they can see the notification when they wake up
+  const showNotification = (message) => {
+    // Create notification container
+    const notification = document.createElement("div");
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 4px;
+      z-index: 9999;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      transition: opacity 0.5s ease-in-out;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    `;
+
+    // Add message text
+    const messageText = document.createElement("span");
+    messageText.textContent = message;
+    notification.appendChild(messageText);
+
+    // Add dismiss instruction
+    const dismissText = document.createElement("span");
+    dismissText.textContent = "(Click to close)";
+    dismissText.style.cssText = `
+      font-size: 12px;
+      opacity: 0.8;
+    `;
+    notification.appendChild(dismissText);
+
+    // Add click event to dismiss notification
+    notification.addEventListener("click", () => {
+      notification.style.opacity = "0";
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 500);
+    });
+
+    // Add to document
+    document.body.appendChild(notification);
+  };
 
   let lastActivity = Date.now();
 
@@ -48,10 +99,9 @@
         toggleButton.getAttribute("aria-checked") === "true" &&
         isVideoPlaying // Only toggle autoplay if video is playing
       ) {
-        autoplayToggle.click(); // 自動再生オフ
-        console.log(
-          "[YouTube AutoStop] 自動再生をオフにしました（無操作検出・動画再生中）",
-        );
+        autoplayToggle.click(); // Turn off autoplay
+        const notificationMessage = "Autoplay turned OFF (inactivity detected)";
+        showNotification(notificationMessage);
       }
     }
   }, 600000);

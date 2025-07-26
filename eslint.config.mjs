@@ -15,7 +15,7 @@ export default defineConfig([
     rules: {
       ...eslintConfigPrettier.rules,
       "prettier/prettier": "error",
-      // 追加のルールはここに記述
+      // Additional rules can be added here
     }
   },
 ]);

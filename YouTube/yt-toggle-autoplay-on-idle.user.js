@@ -3,7 +3,9 @@
 // @namespace    https://cybergene.dev/
 // @version      1.1
 // @description  一定時間無操作ならYouTubeの次動画再生を止める
-// @match        https://www.youtube.com/*
+// @match        https://www.youtube.com/watch?v=*
+// @match        https://www.youtube.com/watch?*
+// @match        https://www.youtube.com/shorts/*
 // @grant        none
 // @author       cybergene
 // @source       https://github.com/cyber-gene/TampermonkeyUserScripts

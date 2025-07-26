@@ -9,13 +9,13 @@ export default defineConfig([
   {
     files: ["**/*.{js,mjs,cjs}"],
     plugins: {
-      prettier: eslintPluginPrettier
+      prettier: eslintPluginPrettier,
     },
     languageOptions: { globals: globals.browser },
     rules: {
       ...eslintConfigPrettier.rules,
       "prettier/prettier": "error",
       // Additional rules can be added here
-    }
+    },
   },
 ]);

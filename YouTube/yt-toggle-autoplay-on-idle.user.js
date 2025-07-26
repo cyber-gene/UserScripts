@@ -38,14 +38,19 @@
         ".ytp-autonav-toggle-button",
       );
 
+      // Get the video element to check if it's playing
+      const video = document.querySelector("video");
+      const isVideoPlaying = video && !video.paused;
+
       if (
         autoplayToggle &&
         toggleButton &&
-        toggleButton.getAttribute("aria-checked") === "true"
+        toggleButton.getAttribute("aria-checked") === "true" &&
+        isVideoPlaying // Only toggle autoplay if video is playing
       ) {
         autoplayToggle.click(); // 自動再生オフ
         console.log(
-          "[YouTube AutoStop] 自動再生をオフにしました（無操作検出）",
+          "[YouTube AutoStop] 自動再生をオフにしました（無操作検出・動画再生中）",
         );
       }
     }

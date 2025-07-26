@@ -67,9 +67,7 @@
     notification.addEventListener("click", () => {
       notification.style.opacity = "0";
       setTimeout(() => {
-        if (notification.parentNode) {
-          notification.parentNode.removeChild(notification);
-        }
+        notification.remove();
       }, 500);
     });
 

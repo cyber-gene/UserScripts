@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         yt-toggle-autoplay-on-idle
 // @namespace    https://cybergene.dev/
-// @version      1.3
+// @version      1.4
 // @description  Stops YouTube autoplay after a period of inactivity
 // @match        https://www.youtube.com/watch?v=*
 // @match        https://www.youtube.com/shorts/*
@@ -15,6 +15,14 @@
   "use strict";
 
   const idleMinutes = 90;
+
+  // Function to format date and time
+  const formatDateTime = () => {
+    const now = new Date();
+    const date = now.toLocaleDateString();
+    const time = now.toLocaleTimeString();
+    return `${date} ${time}`;
+  };
 
   // Function to show on-screen notification that stays visible until user dismisses it
   // This is designed for users who might fall asleep, so they can see the notification when they wake up
@@ -108,7 +116,8 @@
         isVideoPlaying // Only toggle autoplay if video is playing
       ) {
         autoplayToggle.click(); // Turn off autoplay
-        const notificationMessage = "Autoplay turned OFF (inactivity detected)";
+        const dateTime = formatDateTime();
+        const notificationMessage = `Autoplay turned OFF (inactivity detected) - ${dateTime}`;
         showNotification(notificationMessage);
       }
     }

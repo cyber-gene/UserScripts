@@ -18,7 +18,17 @@
 
   // Function to show on-screen notification that stays visible until user dismisses it
   // This is designed for users who might fall asleep, so they can see the notification when they wake up
+  let currentNotification = null; // Track the currently displayed notification
+
   const showNotification = (message) => {
+    // If a notification is already displayed, update its message
+    if (currentNotification) {
+      const messageText = currentNotification.querySelector("span:first-child");
+      if (messageText) {
+        messageText.textContent = message;
+      }
+      return;
+    }
     // Create notification container
     const notification = document.createElement("div");
     notification.style.cssText = `

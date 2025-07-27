@@ -194,9 +194,9 @@
     dismissButton.addEventListener("click", (e) => {
       e.stopPropagation(); // Redundant but added for clarity
       notification.style.opacity = "0";
+      currentNotification = null;
       setTimeout(() => {
         notification.remove();
-        currentNotification = null;
       }, 500);
     });
     buttonsContainer.appendChild(dismissButton);

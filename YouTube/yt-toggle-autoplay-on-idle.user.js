@@ -191,8 +191,7 @@
     dismissButton.addEventListener("mouseout", () => {
       dismissButton.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
     });
-    dismissButton.addEventListener("click", (e) => {
-      e.stopPropagation(); // Redundant but added for clarity
+    dismissButton.addEventListener("click", () => {
       notification.style.opacity = "0";
       currentNotification = null;
       setTimeout(() => {

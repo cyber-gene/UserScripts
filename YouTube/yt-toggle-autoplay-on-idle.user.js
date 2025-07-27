@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         yt-toggle-autoplay-on-idle
 // @namespace    https://cybergene.dev/
-// @version      1.5
+// @version      1.5.1
 // @description  Stops YouTube autoplay after a period of inactivity
 // @match        https://www.youtube.com/watch?v=*
 // @match        https://www.youtube.com/shorts/*
 // @grant        none
 // @author       cybergene
 // @source       https://github.com/cyber-gene/TampermonkeyUserScripts
+// @updateURL    https://raw.githubusercontent.com/cyber-gene/TampermonkeyUserScripts/main/YouTube/yt-toggle-autoplay-on-idle.user.js
 // @downloadURL  https://raw.githubusercontent.com/cyber-gene/TampermonkeyUserScripts/main/YouTube/yt-toggle-autoplay-on-idle.user.js
 // ==/UserScript==
 

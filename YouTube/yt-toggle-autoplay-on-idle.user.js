@@ -193,9 +193,9 @@
     });
     dismissButton.addEventListener("click", () => {
       notification.style.opacity = "0";
+      currentNotification = null;
       setTimeout(() => {
         notification.remove();
-        currentNotification = null;
       }, 500);
     });
     buttonsContainer.appendChild(dismissButton);

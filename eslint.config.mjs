@@ -22,9 +22,7 @@ export default defineConfig([
   {
     files: ["*.user.js"],
     plugins: {
-      userscripts: {
-        rules: userscripts.rules,
-      },
+      userscripts: userscripts,
     },
     rules: {
       ...userscripts.configs.recommended.rules,

@@ -11,12 +11,40 @@
 // @downloadURL  https://raw.githubusercontent.com/cyber-gene/TampermonkeyUserScripts/main/YouTube/yt-toggle-autoplay-on-idle.user.js
 // ==/UserScript==
 
+/**
+ * YouTube Auto-Toggle Autoplay on Idle
+ *
+ * This script automatically turns off YouTube's autoplay feature after a period of user inactivity.
+ * It's designed to prevent YouTube from continuously playing videos when the user is no longer
+ * actively watching (e.g., if they've fallen asleep).
+ *
+ * Features:
+ * - Detects user inactivity for a configurable period (default: 90 minutes)
+ * - Only turns off autoplay when videos are actually playing
+ * - Displays a persistent notification when autoplay has been disabled
+ * - Notification includes timestamp and remains visible until manually dismissed
+ *
+ * Configuration:
+ * - Modify the `idleMinutes` constant to change the inactivity detection threshold
+ *
+ * Requirements:
+ * - Any userscript manager (Tampermonkey etc.)
+ * - Works on YouTube video and YouTube Shorts pages
+ */
+
 (function () {
   "use strict";
 
+  /**
+   * The number of minutes of inactivity before turning off autoplay
+   * Modify this value to change the idle detection threshold
+   */
   const idleMinutes = 90;
 
-  // Function to format date and time
+  /**
+   * Formats the current date and time as a localized string
+   * @returns {string} Formatted date and time string
+   */
   const formatDateTime = () => {
     const now = new Date();
     const date = now.toLocaleDateString();
@@ -24,8 +52,11 @@
     return `${date} ${time}`;
   };
 
-  // Function to show on-screen notification that stays visible until user dismisses it
-  // This is designed for users who might fall asleep, so they can see the notification when they wake up
+  /**
+   * Shows an on-screen notification that stays visible until dismissed
+   * Designed for users who might fall asleep so they can see when they wake up
+   * @param {string} message - The notification message to display
+   */
   let currentNotification = null; // Track the currently displayed notification
 
   const showNotification = (message) => {
@@ -83,15 +114,30 @@
     document.body.appendChild(notification);
   };
 
+  /**
+   * Tracks the timestamp of the last user activity
+   * Used to calculate idle duration
+   */
   let lastActivity = Date.now();
 
+  /**
+   * Updates the last activity timestamp to the current time
+   * Called whenever user interaction is detected
+   */
   const updateActivity = () => {
     lastActivity = Date.now();
   };
+
+  // Register event listeners to detect user activity
   ["mousemove", "keydown", "click"].forEach((evt) =>
     document.addEventListener(evt, updateActivity),
   );
 
+  /**
+   * Periodically checks if the user has been inactive for longer than the threshold
+   * If inactive and autoplay is enabled, turns off autoplay and shows notification
+   * Runs every 10 minutes (600,000 ms)
+   */
   setInterval(() => {
     const idleMs = Date.now() - lastActivity;
     const idleThreshold = idleMinutes * 60 * 1000;

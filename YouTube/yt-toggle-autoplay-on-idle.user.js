@@ -233,7 +233,7 @@
   /**
    * Periodically checks if the user has been inactive for longer than the threshold
    * If inactive and autoplay is enabled, turns off autoplay and shows notification
-   * Runs every 10 minutes (600,000 ms)
+   * Runs every 1 minute (60,000 ms)
    */
   setInterval(() => {
     const idleMs = Date.now() - lastActivity;
@@ -264,5 +264,5 @@
         showNotification(notificationMessage);
       }
     }
-  }, 600000);
+  }, 60000);
 })();

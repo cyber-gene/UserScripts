@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         yt-toggle-autoplay-on-idle
 // @namespace    https://cybergene.dev/
-// @version      1.4
+// @version      1.5
 // @description  Stops YouTube autoplay after a period of inactivity
 // @match        https://www.youtube.com/watch?v=*
 // @match        https://www.youtube.com/shorts/*
@@ -23,6 +23,7 @@
  * - Only turns off autoplay when videos are actually playing
  * - Displays a persistent notification when autoplay has been disabled
  * - Notification includes timestamp and remains visible until manually dismissed
+ * - Provides a button in the notification to easily turn autoplay back ON
  *
  * Configuration:
  * - Modify the `idleMinutes` constant to change the inactivity detection threshold
@@ -59,15 +60,48 @@
    */
   let currentNotification = null; // Track the currently displayed notification
 
+  /**
+   * Toggles YouTube's autoplay feature ON
+   * Finds and clicks the autoplay toggle button if it's currently OFF
+   */
+  const enableAutoplay = () => {
+    const autoplayToggle = document.querySelector("button.ytp-autonav-toggle");
+    const toggleButton = autoplayToggle?.querySelector(
+      ".ytp-autonav-toggle-button",
+    );
+
+    if (
+      autoplayToggle &&
+      toggleButton &&
+      toggleButton.getAttribute("aria-checked") === "false"
+    ) {
+      autoplayToggle.click(); // Turn ON autoplay
+
+      // Update the notification message
+      if (currentNotification) {
+        const messageText = currentNotification.querySelector(
+          ".notification-message",
+        );
+        if (messageText) {
+          const dateTime = formatDateTime();
+          messageText.textContent = `Autoplay turned ON - ${dateTime}`;
+        }
+      }
+    }
+  };
+
   const showNotification = (message) => {
     // If a notification is already displayed, update its message
     if (currentNotification) {
-      const messageText = currentNotification.querySelector("span:first-child");
+      const messageText = currentNotification.querySelector(
+        ".notification-message",
+      );
       if (messageText) {
         messageText.textContent = message;
       }
       return;
     }
+
     // Create notification container
     const notification = document.createElement("div");
     notification.style.cssText = `
@@ -82,7 +116,14 @@
       font-size: 14px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
       transition: opacity 0.5s ease-in-out;
-      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    `;
+
+    // Create content container
+    const contentContainer = document.createElement("div");
+    contentContainer.style.cssText = `
       display: flex;
       align-items: center;
       gap: 10px;
@@ -90,25 +131,80 @@
 
     // Add message text
     const messageText = document.createElement("span");
+    messageText.className = "notification-message";
     messageText.textContent = message;
-    notification.appendChild(messageText);
+    contentContainer.appendChild(messageText);
 
-    // Add dismiss instruction
-    const dismissText = document.createElement("span");
-    dismissText.textContent = "(Click to close)";
-    dismissText.style.cssText = `
-      font-size: 12px;
-      opacity: 0.8;
+    // Add to notification
+    notification.appendChild(contentContainer);
+
+    // Create buttons container
+    const buttonsContainer = document.createElement("div");
+    buttonsContainer.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
     `;
-    notification.appendChild(dismissText);
 
-    // Add click event to dismiss notification
-    notification.addEventListener("click", () => {
+    // Add enable autoplay button
+    const enableButton = document.createElement("button");
+    enableButton.textContent = "Turn Autoplay ON";
+    enableButton.style.cssText = `
+      background-color: #3ea6ff;
+      color: white;
+      border: none;
+      border-radius: 2px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    `;
+    enableButton.addEventListener("mouseover", () => {
+      enableButton.style.backgroundColor = "#65b8ff";
+    });
+    enableButton.addEventListener("mouseout", () => {
+      enableButton.style.backgroundColor = "#3ea6ff";
+    });
+    enableButton.addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevent notification from being dismissed
+      enableAutoplay();
+    });
+    buttonsContainer.appendChild(enableButton);
+
+    // Add dismiss button
+    const dismissButton = document.createElement("button");
+    dismissButton.textContent = "Dismiss";
+    dismissButton.style.cssText = `
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: none;
+      border-radius: 2px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    `;
+    dismissButton.addEventListener("mouseover", () => {
+      dismissButton.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+    });
+    dismissButton.addEventListener("mouseout", () => {
+      dismissButton.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    });
+    dismissButton.addEventListener("click", () => {
       notification.style.opacity = "0";
+      currentNotification = null;
       setTimeout(() => {
         notification.remove();
       }, 500);
     });
+    buttonsContainer.appendChild(dismissButton);
+
+    // Add buttons container to notification
+    notification.appendChild(buttonsContainer);
+
+    // Store reference to current notification
+    currentNotification = notification;
 
     // Add to document
     document.body.appendChild(notification);

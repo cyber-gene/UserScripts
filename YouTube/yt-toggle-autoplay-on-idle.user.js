@@ -151,7 +151,7 @@
     enableButton.textContent = "Turn Autoplay ON";
     enableButton.style.cssText = `
       background-color: #3ea6ff;
-      color: black;
+      color: white;
       border: none;
       border-radius: 2px;
       padding: 6px 12px;

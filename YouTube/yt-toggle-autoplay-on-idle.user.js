@@ -203,11 +203,11 @@
     // Add buttons container to notification
     notification.appendChild(buttonsContainer);
 
-    // Add to document
-    document.body.appendChild(notification);
-
     // Store reference to current notification
     currentNotification = notification;
+
+    // Add to document
+    document.body.appendChild(notification);
   };
 
   /**

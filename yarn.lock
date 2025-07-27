@@ -225,6 +225,13 @@ eslint-plugin-prettier@^5.5.3:
     prettier-linter-helpers "^1.0.0"
     synckit "^0.11.7"
 
+eslint-plugin-userscripts@^0.5.6:
+  version "0.5.6"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-userscripts/-/eslint-plugin-userscripts-0.5.6.tgz#345c65b0e23930ade2daf29076d3f65e1022ba73"
+  integrity sha512-/DXb8UKyEkNCzXOA6j4E4rCWn2mLCUw2TMxrzSoz3spi4cyANlE0JNmtRleAmzc1HTUmZXr5fIMCQxyLS73DZQ==
+  dependencies:
+    semver "^7.3.8"
+
 eslint-scope@^8.4.0:
   version "8.4.0"
   resolved "https://registry.yarnpkg.com/eslint-scope/-/eslint-scope-8.4.0.tgz#88e646a207fad61436ffa39eb505147200655c82"
@@ -557,6 +564,11 @@ resolve-from@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-4.0.0.tgz#4abcd852ad32dd7baabfe9b40e00a36db5f392e6"
   integrity sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==
+
+semver@^7.3.8:
+  version "7.7.2"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.7.2.tgz#67d99fdcd35cec21e6f8b87a7fd515a33f982b58"
+  integrity sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==
 
 shebang-command@^2.0.0:
   version "2.0.0"

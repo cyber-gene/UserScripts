@@ -90,6 +90,7 @@
 
           // Fade out and remove notification after 3 seconds
           setTimeout(() => {
+            currentNotification.style.transition = "opacity 0.5s ease"; // Add smooth transition
             currentNotification.style.opacity = "0";
             setTimeout(() => {
               currentNotification.remove();

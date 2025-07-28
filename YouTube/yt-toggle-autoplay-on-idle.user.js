@@ -87,6 +87,15 @@
         if (messageText) {
           const dateTime = formatDateTime();
           messageText.textContent = `Autoplay turned ON - ${dateTime}`;
+
+          // Fade out and remove notification after 3 seconds
+          setTimeout(() => {
+            currentNotification.style.opacity = "0";
+            setTimeout(() => {
+              currentNotification.remove();
+              currentNotification = null;
+            }, 500);
+          }, 3000);
         }
       }
     }

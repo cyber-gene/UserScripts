@@ -93,8 +93,10 @@
             currentNotification.style.transition = "opacity 0.5s ease"; // Add smooth transition
             currentNotification.style.opacity = "0";
             setTimeout(() => {
-              currentNotification.remove();
-              currentNotification = null;
+              if (currentNotification) {
+                currentNotification.remove();
+                currentNotification = null;
+              }
             }, 500);
           }, 3000);
         }

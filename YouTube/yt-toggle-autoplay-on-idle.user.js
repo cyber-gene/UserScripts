@@ -2,7 +2,7 @@
 // @name         YouTube Auto-Toggle Autoplay on Idle
 // @namespace    https://cybergene.dev/
 // @version      1.6.3
-// @description  Automatically turns off YouTube's autoplay feature after a period of inactivity (default: 90 minutes) to prevent continuous playback when you're no longer watching
+// @description  Automatically turns off YouTube's autoplay feature after a configurable period of inactivity to prevent continuous playback when you're no longer watching
 // @match        https://www.youtube.com/watch?v=*
 // @match        https://www.youtube.com/shorts/*
 // @match        https://www.youtube.com/live/*

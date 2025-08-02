@@ -39,7 +39,7 @@
   "use strict";
 
   /**
-   * The number of minutes of inactivity before turning off autoplay
+   * Idle time threshold (in minutes) for disabling autoplay
    * Modify this value to change the idle detection threshold
    */
   const idleMinutes = 90;
@@ -56,11 +56,10 @@
   };
 
   /**
-   * Shows an on-screen notification that stays visible until dismissed
-   * Designed for users who might fall asleep so they can see when they wake up
-   * @param {string} message - The notification message to display
+   * Tracks the currently displayed notification
+   * Used to update or remove the notification when needed
    */
-  let currentNotification = null; // Track the currently displayed notification
+  let currentNotification = null;
 
   /**
    * Toggles YouTube's autoplay feature ON
@@ -90,7 +89,7 @@
 
           // Fade out and remove notification after 3 seconds
           setTimeout(() => {
-            currentNotification.style.transition = "opacity 0.5s ease"; // Add smooth transition
+            currentNotification.style.transition = "opacity 0.5s ease"; // Add a smooth transition
             currentNotification.style.opacity = "0";
             setTimeout(() => {
               if (currentNotification) {
@@ -104,6 +103,12 @@
     }
   };
 
+  /**
+   * Shows an on-screen notification that stays visible until dismissed
+   * Creates a new notification or updates an existing one with buttons for enabling autoplay and dismissing
+   * Designed for users who might fall asleep so they can see when they wake up
+   * @param {string} message - The notification message to display
+   */
   const showNotification = (message) => {
     // If a notification is already displayed, update its message
     if (currentNotification) {
@@ -160,7 +165,7 @@
       gap: 10px;
     `;
 
-    // Add enable autoplay button
+    // Add the enable autoplay button
     const enableButton = document.createElement("button");
     enableButton.textContent = "Turn Autoplay ON";
     enableButton.style.cssText = `
@@ -217,7 +222,7 @@
     // Add buttons container to notification
     notification.appendChild(buttonsContainer);
 
-    // Store reference to current notification
+    // Store reference to the current notification
     currentNotification = notification;
 
     // Add to document
@@ -238,7 +243,11 @@
     lastActivity = Date.now();
   };
 
-  // Register event listeners to detect user activity
+  /**
+   * Registers event listeners to detect user activity
+   * Monitors mouse movements, keyboard input, and clicks to track user presence
+   * Each event triggers the updateActivity function to reset the idle timer
+   */
   ["mousemove", "keydown", "click"].forEach((evt) =>
     document.addEventListener(evt, updateActivity),
   );
@@ -269,7 +278,7 @@
         autoplayToggle &&
         toggleButton &&
         toggleButton.getAttribute("aria-checked") === "true" &&
-        isVideoPlaying // Only toggle autoplay if video is playing
+        isVideoPlaying // Only toggle autoplay if a video is playing
       ) {
         autoplayToggle.click(); // Turn off autoplay
         const dateTime = formatDateTime();

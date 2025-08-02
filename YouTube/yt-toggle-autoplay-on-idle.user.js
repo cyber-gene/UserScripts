@@ -157,7 +157,7 @@
     // Add to notification
     notification.appendChild(contentContainer);
 
-    // Create button's container
+    // Create buttons container
     const buttonsContainer = document.createElement("div");
     buttonsContainer.style.cssText = `
       display: flex;

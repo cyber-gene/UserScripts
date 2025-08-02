@@ -40,7 +40,7 @@
 
   /**
    * Idle time threshold (in minutes) for disabling autoplay
-   * Modifies this value to change the idle detection threshold
+   * Modify this value to change the idle detection threshold
    */
   const idleMinutes = 90;
 

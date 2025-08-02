@@ -165,7 +165,7 @@
       gap: 10px;
     `;
 
-    // Add the enabling autoplay button
+    // Add the enable autoplay button
     const enableButton = document.createElement("button");
     enableButton.textContent = "Turn Autoplay ON";
     enableButton.style.cssText = `

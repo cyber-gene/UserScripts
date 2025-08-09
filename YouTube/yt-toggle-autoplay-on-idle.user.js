@@ -3,7 +3,7 @@
 // @namespace    https://cybergene.dev/
 // @version      1.6.4
 // @description  Automatically turns off YouTube's autoplay feature after a configurable period of inactivity to prevent continuous playback when you're no longer watching
-// @match        https://www.youtube.com/watch?v*
+// @match        https://www.youtube.com/watch*
 // @match        https://www.youtube.com/shorts/*
 // @match        https://www.youtube.com/live/*
 // @grant        none

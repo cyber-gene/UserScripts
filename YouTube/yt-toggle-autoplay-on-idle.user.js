@@ -8,9 +8,9 @@
 // @match        https://www.youtube.com/live/*
 // @grant        none
 // @author       cybergene
-// @source       https://github.com/cyber-gene/TampermonkeyUserScripts
-// @updateURL    https://raw.githubusercontent.com/cyber-gene/TampermonkeyUserScripts/main/YouTube/yt-toggle-autoplay-on-idle.user.js
-// @downloadURL  https://raw.githubusercontent.com/cyber-gene/TampermonkeyUserScripts/main/YouTube/yt-toggle-autoplay-on-idle.user.js
+// @source       https://github.com/cyber-gene/UserScripts
+// @updateURL    https://raw.githubusercontent.com/cyber-gene/UserScripts/main/YouTube/yt-toggle-autoplay-on-idle.user.js
+// @downloadURL  https://raw.githubusercontent.com/cyber-gene/UserScripts/main/YouTube/yt-toggle-autoplay-on-idle.user.js
 // ==/UserScript==
 
 /**

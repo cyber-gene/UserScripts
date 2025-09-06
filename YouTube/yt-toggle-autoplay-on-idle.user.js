@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Auto-Toggle Autoplay on Idle
 // @namespace    https://cybergene.dev/
-// @version      1.6.5
+// @version      1.6.6
 // @description  Automatically turns off YouTube's autoplay feature after a configurable period of inactivity to prevent continuous playback when you're no longer watching
 // @match        https://www.youtube.com/watch?v=*
 // @match        https://www.youtube.com/shorts/*
@@ -78,27 +78,18 @@
     ) {
       autoplayToggle.click(); // Turn ON autoplay
 
-      // Update the notification message
+      // Close the modal immediately after enabling autoplay
       if (currentNotification) {
-        const messageText = currentNotification.querySelector(
-          ".notification-message",
-        );
-        if (messageText) {
-          const dateTime = formatDateTime();
-          messageText.textContent = `Autoplay turned ON - ${dateTime}`;
-
-          // Fade out and remove notification after 3 seconds
-          setTimeout(() => {
-            currentNotification.style.transition = "opacity 0.5s ease"; // Add a smooth transition
-            currentNotification.style.opacity = "0";
-            setTimeout(() => {
-              if (currentNotification) {
-                currentNotification.remove();
-                currentNotification = null;
-              }
-            }, 500);
-          }, 3000);
-        }
+        const notificationToClose = currentNotification;
+        notificationToClose.style.opacity = "0";
+        setTimeout(() => {
+          if (notificationToClose && notificationToClose.parentNode) {
+            notificationToClose.remove();
+            if (currentNotification === notificationToClose) {
+              currentNotification = null;
+            }
+          }
+        }, 500);
       }
     }
   };
@@ -121,23 +112,37 @@
       return;
     }
 
-    // Create notification container
+    // Create modal background overlay
+    const modalOverlay = document.createElement("div");
+    modalOverlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9998;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.5s ease-in-out;
+    `;
+
+    // Create notification container (modal dialog)
     const notification = document.createElement("div");
     notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background-color: rgba(0, 0, 0, 0.8);
+      background-color: rgba(0, 0, 0, 0.9);
       color: white;
-      padding: 12px 20px;
-      border-radius: 4px;
-      z-index: 9999;
-      font-size: 14px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      transition: opacity 0.5s ease-in-out;
+      padding: 20px 30px;
+      border-radius: 8px;
+      font-size: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 15px;
+      max-width: 400px;
+      min-width: 300px;
+      text-align: center;
     `;
 
     // Create content container
@@ -161,8 +166,8 @@
     const buttonsContainer = document.createElement("div");
     buttonsContainer.style.cssText = `
       display: flex;
-      justify-content: space-between;
-      gap: 10px;
+      justify-content: center;
+      gap: 15px;
     `;
 
     // Add the enable autoplay button
@@ -172,9 +177,9 @@
       background-color: #3ea6ff;
       color: white;
       border: none;
-      border-radius: 2px;
-      padding: 6px 12px;
-      font-size: 13px;
+      border-radius: 4px;
+      padding: 10px 20px;
+      font-size: 14px;
       font-weight: 500;
       cursor: pointer;
       transition: background-color 0.2s;
@@ -195,26 +200,26 @@
     const dismissButton = document.createElement("button");
     dismissButton.textContent = "Dismiss";
     dismissButton.style.cssText = `
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.15);
       color: white;
       border: none;
-      border-radius: 2px;
-      padding: 6px 12px;
-      font-size: 13px;
+      border-radius: 4px;
+      padding: 10px 20px;
+      font-size: 14px;
       cursor: pointer;
       transition: background-color 0.2s;
     `;
     dismissButton.addEventListener("mouseover", () => {
-      dismissButton.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+      dismissButton.style.backgroundColor = "rgba(255, 255, 255, 0.25)";
     });
     dismissButton.addEventListener("mouseout", () => {
-      dismissButton.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+      dismissButton.style.backgroundColor = "rgba(255, 255, 255, 0.15)";
     });
     dismissButton.addEventListener("click", () => {
-      notification.style.opacity = "0";
+      modalOverlay.style.opacity = "0";
       currentNotification = null;
       setTimeout(() => {
-        notification.remove();
+        modalOverlay.remove();
       }, 500);
     });
     buttonsContainer.appendChild(dismissButton);
@@ -222,11 +227,21 @@
     // Add buttons container to notification
     notification.appendChild(buttonsContainer);
 
-    // Store reference to the current notification
-    currentNotification = notification;
+    // Add notification to modal overlay
+    modalOverlay.appendChild(notification);
 
-    // Add to document
-    document.body.appendChild(notification);
+    // Store reference to the current notification (now the modal overlay)
+    currentNotification = modalOverlay;
+
+    // Add modal overlay to document
+    document.body.appendChild(modalOverlay);
+
+    // Allow clicking on overlay background to dismiss modal
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) {
+        dismissButton.click();
+      }
+    });
   };
 
   /**

@@ -80,11 +80,14 @@
 
       // Close the modal immediately after enabling autoplay
       if (currentNotification) {
-        currentNotification.style.opacity = "0";
+        const notificationToClose = currentNotification;
+        notificationToClose.style.opacity = "0";
         setTimeout(() => {
-          if (currentNotification) {
-            currentNotification.remove();
-            currentNotification = null;
+          if (notificationToClose && notificationToClose.parentNode) {
+            notificationToClose.remove();
+            if (currentNotification === notificationToClose) {
+              currentNotification = null;
+            }
           }
         }, 500);
       }

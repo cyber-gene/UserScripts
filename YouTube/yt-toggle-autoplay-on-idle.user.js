@@ -243,15 +243,15 @@
   };
 
   const isVideoPage = () => {
-    const url = window.location.href;
+    const { pathname, searchParams } = new URL(location.href);
     return (
-      url.includes("/watch?v=") ||
-      url.includes("/shorts/") ||
-      url.includes("/live/")
+      (pathname === "/watch" && searchParams.has("v")) ||
+      pathname.startsWith("/shorts/") ||
+      pathname.startsWith("/live/")
     );
   };
 
-  // Dismiss notification when navigating away from a video page
+  // Dismiss notification on any SPA navigation (covers video→video and video→non-video)
   document.addEventListener("yt-navigate-start", () => {
     if (currentNotification) {
       currentNotification.remove();

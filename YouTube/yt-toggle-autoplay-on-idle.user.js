@@ -244,7 +244,11 @@
 
   const isVideoPage = () => {
     const url = window.location.href;
-    return url.includes("/watch?v=") || url.includes("/shorts/") || url.includes("/live/");
+    return (
+      url.includes("/watch?v=") ||
+      url.includes("/shorts/") ||
+      url.includes("/live/")
+    );
   };
 
   // Dismiss notification when navigating away from a video page

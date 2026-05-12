@@ -1,11 +1,9 @@
 // ==UserScript==
 // @name         YouTube Auto-Toggle Autoplay on Idle
 // @namespace    https://cybergene.dev/
-// @version      1.6.6
+// @version      1.7.0
 // @description  Automatically turns off YouTube's autoplay feature after a configurable period of inactivity to prevent continuous playback when you're no longer watching
-// @match        https://www.youtube.com/watch?v=*
-// @match        https://www.youtube.com/shorts/*
-// @match        https://www.youtube.com/live/*
+// @match        https://www.youtube.com/*
 // @grant        none
 // @author       cybergene
 // @source       https://github.com/cyber-gene/UserScripts
@@ -244,6 +242,23 @@
     });
   };
 
+  const isVideoPage = () => {
+    const { pathname, searchParams } = new URL(location.href);
+    return (
+      (pathname === "/watch" && searchParams.has("v")) ||
+      pathname.startsWith("/shorts/") ||
+      pathname.startsWith("/live/")
+    );
+  };
+
+  // Dismiss notification on any SPA navigation (covers video→video and video→non-video)
+  document.addEventListener("yt-navigate-start", () => {
+    if (currentNotification) {
+      currentNotification.remove();
+      currentNotification = null;
+    }
+  });
+
   /**
    * Tracks the timestamp of the last user activity
    * Used to calculate idle duration
@@ -273,6 +288,8 @@
    * Runs every 1 minute (60,000 ms)
    */
   setInterval(() => {
+    if (!isVideoPage()) return;
+
     const idleMs = Date.now() - lastActivity;
     const idleThreshold = idleMinutes * 60 * 1000;
 

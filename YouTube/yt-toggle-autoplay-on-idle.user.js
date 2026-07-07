@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Auto-Toggle Autoplay on Idle
 // @namespace    https://cybergene.dev/
-// @version      1.7.0
+// @version      1.8.0
 // @description  Automatically turns off YouTube's autoplay feature after a configurable period of inactivity to prevent continuous playback when you're no longer watching
 // @match        https://www.youtube.com/*
 // @grant        none
@@ -43,14 +43,13 @@
   const idleMinutes = 90;
 
   /**
-   * Formats the current date and time as a localized string
+   * Formats a date and time as a localized string
+   * @param {number} [timestamp=Date.now()] - Unix timestamp in milliseconds to format
    * @returns {string} Formatted date and time string
    */
-  const formatDateTime = () => {
-    const now = new Date();
-    const date = now.toLocaleDateString();
-    const time = now.toLocaleTimeString();
-    return `${date} ${time}`;
+  const formatDateTime = (timestamp = Date.now()) => {
+    const d = new Date(timestamp);
+    return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
   };
 
   /**
@@ -313,8 +312,8 @@
         isVideoPlaying // Only toggle autoplay if a video is playing
       ) {
         autoplayToggle.click(); // Turn off autoplay
-        const dateTime = formatDateTime();
-        const notificationMessage = `Autoplay turned OFF (inactivity detected) - ${dateTime}`;
+        const dateTime = formatDateTime(lastActivity);
+        const notificationMessage = `Autoplay turned OFF (inactive since ${dateTime})`;
         showNotification(notificationMessage);
       }
     }

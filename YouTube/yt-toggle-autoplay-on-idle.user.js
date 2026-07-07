@@ -43,7 +43,8 @@
   const idleMinutes = 90;
 
   /**
-   * Formats the current date and time as a localized string
+   * Formats a date and time as a localized string
+   * @param {number} [timestamp=Date.now()] - Unix timestamp in milliseconds to format
    * @returns {string} Formatted date and time string
    */
   const formatDateTime = (timestamp = Date.now()) => {

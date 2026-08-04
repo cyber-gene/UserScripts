@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DLSite Play Metadata Copier
 // @namespace    https://cybergene.dev/
-// @version      1.0.0
+// @version      1.1.0
 // @description  Displays metadata from a DLSite Play work page in an easy-to-copy format
 // @match        https://play.dlsite.com/*
 // @grant        none
@@ -282,7 +282,20 @@
         #${ROOT_ID} .dpm-field-label { font-size:13px; font-weight:600 }
         #${ROOT_ID} .dpm-field-value { min-width:0; overflow-wrap:anywhere; white-space:pre-wrap;
           font:13px/1.55 ui-monospace,monospace; user-select:text }
-        #${ROOT_ID} .dpm-field-copy { min-height:32px; padding:5px 10px }
+        #${ROOT_ID} .dpm-field-copy-area { position:relative; display:flex; align-items:center }
+        #${ROOT_ID} .dpm-field-copy { min-height:32px; padding:5px 10px; border-color:#94a3b8;
+          background:#fff; transition:background-color .15s,border-color .15s,color .15s,transform .1s }
+        #${ROOT_ID} .dpm-field-copy:hover { border-color:#2563eb; color:#fff; background:#2563eb }
+        #${ROOT_ID} .dpm-field-copy:focus-visible { outline:3px solid rgba(37,99,235,.3);
+          outline-offset:2px }
+        #${ROOT_ID} .dpm-field-copy:active { transform:translateY(1px); background:#dbeafe }
+        #${ROOT_ID} .dpm-field-copy.is-copied { border-color:#059669; color:#fff; background:#059669 }
+        #${ROOT_ID} .dpm-field-copy-feedback { position:absolute; top:50%; right:calc(100% + 8px);
+          z-index:1; padding:3px 7px; border-radius:5px; color:#065f46;
+          background:rgba(209,250,229,.9); font-size:12px; font-weight:600; white-space:nowrap;
+          pointer-events:none; opacity:0; transform:translate(3px,-50%);
+          transition:opacity .15s,transform .15s }
+        #${ROOT_ID} .dpm-field-copy-feedback.is-visible { opacity:1; transform:translate(0,-50%) }
         #${ROOT_ID} select, #${ROOT_ID} button { min-height:38px; padding:7px 12px;
           border:1px solid #cbd5e1; border-radius:7px; background:#fff; color:#1f2937;
           font:inherit; cursor:pointer }
@@ -344,11 +357,26 @@
           copyButton.type = "button";
           copyButton.className = "dpm-field-copy";
           copyButton.textContent = "コピー";
+          const copyArea = document.createElement("div");
+          copyArea.className = "dpm-field-copy-area";
+          const copyFeedback = document.createElement("span");
+          copyFeedback.className = "dpm-field-copy-feedback";
+          copyFeedback.textContent = "Copied!";
+          copyFeedback.setAttribute("aria-live", "polite");
+          let feedbackTimer;
           copyButton.addEventListener("click", async () => {
             await copyText(displayedValue);
+            clearTimeout(feedbackTimer);
+            copyButton.classList.add("is-copied");
+            copyFeedback.classList.add("is-visible");
+            feedbackTimer = setTimeout(() => {
+              copyButton.classList.remove("is-copied");
+              copyFeedback.classList.remove("is-visible");
+            }, 1800);
             status.textContent = `${FIELD_NAMES[key]}をコピーしました。`;
           });
-          row.append(label, valueElement, copyButton);
+          copyArea.append(copyFeedback, copyButton);
+          row.append(label, valueElement, copyArea);
           fields.appendChild(row);
         }
         return;

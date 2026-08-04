@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DLSite Play Metadata Copier
 // @namespace    https://cybergene.dev/
-// @version      0.0.1
+// @version      1.0.0
 // @description  Displays metadata from a DLSite Play work page in an easy-to-copy format
 // @match        https://play.dlsite.com/*
 // @grant        none
@@ -61,6 +61,19 @@
       .replace(/\s+/g, " ")
       .trim();
   const unique = (values) => [...new Set(values.map(clean).filter(Boolean))];
+  const toArray = (value) =>
+    unique(Array.isArray(value) ? value : String(value ?? "").split(/[、,]/));
+  const parseDate = (value) => {
+    const text = clean(value);
+    if (!text) return null;
+    const japaneseDate = text.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日/);
+    if (japaneseDate) {
+      const [, year, month, day] = japaneseDate;
+      return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+    }
+    const date = new Date(text);
+    return Number.isNaN(date.getTime()) ? null : date;
+  };
   const readMeta = (selector) =>
     clean(document.querySelector(selector)?.content);
 
@@ -179,14 +192,15 @@
       scenario: labelled.scenario || "",
       author: labelled.author || structured.author || "",
       illustrator: labelled.illustrator || "",
-      voiceActor: labelled.voiceActor || "",
+      voiceActor: toArray(labelled.voiceActor),
       workId,
-      genre: labelled.genre || genres.join("、"),
+      genre: toArray(labelled.genre || genres),
       tags: labelled.tags || structured.tags || "",
-      releaseDate:
+      releaseDate: parseDate(
         labelled.releaseDate ||
-        structured.releaseDate ||
-        findText(root, /^\d{4}年\d{1,2}月\d{1,2}日\s*発売$/),
+          structured.releaseDate ||
+          findText(root, /^\d{4}年\d{1,2}月\d{1,2}日\s*発売$/),
+      ),
       ageRating:
         labelled.ageRating ||
         badges.find((value) => /^(?:R18|全年齢)$/i.test(value)) ||
@@ -206,15 +220,30 @@
   };
 
   const filledEntries = (metadata) =>
-    Object.entries(metadata).filter(([, value]) => clean(value));
+    Object.entries(metadata).filter(([, value]) =>
+      Array.isArray(value) ? value.length > 0 : Boolean(clean(value)),
+    );
+  const displayValue = (value) =>
+    Array.isArray(value)
+      ? value.join("、")
+      : value instanceof Date
+        ? value.toISOString().slice(0, 10)
+        : value;
+  const displayFieldValue = (key, value) => {
+    if (key === "voiceActor" && Array.isArray(value)) return value.join(" / ");
+    if (key === "genre" && Array.isArray(value)) return value.join("; ");
+    return displayValue(value);
+  };
   const formatMetadata = (metadata, format) => {
     if (format === "json") return JSON.stringify(metadata, null, 2);
     if (format === "markdown")
       return filledEntries(metadata)
-        .map(([key, value]) => `- **${FIELD_NAMES[key]}**: ${value}`)
+        .map(
+          ([key, value]) => `- **${FIELD_NAMES[key]}**: ${displayValue(value)}`,
+        )
         .join("\n");
     return filledEntries(metadata)
-      .map(([key, value]) => `${FIELD_NAMES[key]}: ${value}`)
+      .map(([key, value]) => `${FIELD_NAMES[key]}: ${displayValue(value)}`)
       .join("\n");
   };
 
@@ -236,6 +265,15 @@
         #${ROOT_ID} textarea { width:100%; min-height:360px; resize:vertical; padding:12px;
           border:1px solid #cbd5e1; border-radius:8px; color:#111827; background:#f8fafc;
           font:13px/1.65 ui-monospace,monospace }
+        #${ROOT_ID} .dpm-fields { min-height:360px; overflow:auto; border:1px solid #cbd5e1;
+          border-radius:8px; background:#f8fafc }
+        #${ROOT_ID} .dpm-field { display:grid; grid-template-columns:minmax(110px,160px) 1fr auto;
+          align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid #e2e8f0 }
+        #${ROOT_ID} .dpm-field:last-child { border-bottom:0 }
+        #${ROOT_ID} .dpm-field-label { font-size:13px; font-weight:600 }
+        #${ROOT_ID} .dpm-field-value { min-width:0; overflow-wrap:anywhere; white-space:pre-wrap;
+          font:13px/1.55 ui-monospace,monospace; user-select:text }
+        #${ROOT_ID} .dpm-field-copy { min-height:32px; padding:5px 10px }
         #${ROOT_ID} select, #${ROOT_ID} button { min-height:38px; padding:7px 12px;
           border:1px solid #cbd5e1; border-radius:7px; background:#fff; color:#1f2937;
           font:inherit; cursor:pointer }
@@ -243,22 +281,69 @@
           background:#2563eb; font-weight:600 }
         #${ROOT_ID} .dpm-close { border:0; padding:4px 8px; font-size:22px }
         #${ROOT_ID} .dpm-status { min-height:20px; margin:0; color:#047857; font-size:13px }
+        @media (max-width:600px) { #${ROOT_ID} .dpm-field { grid-template-columns:1fr auto }
+          #${ROOT_ID} .dpm-field-label { grid-column:1 / -1 } }
       </style>
       <section class="dpm-dialog" role="dialog" aria-modal="true" aria-labelledby="dpm-title">
         <div class="dpm-header"><h2 id="dpm-title">作品メタデータ</h2>
           <button class="dpm-close" type="button" aria-label="閉じる">×</button></div>
         <textarea aria-label="作品メタデータ" spellcheck="false"></textarea>
+        <div class="dpm-fields" hidden></div>
         <div class="dpm-actions"><label>形式 <select><option value="text">テキスト</option>
-          <option value="markdown">Markdown</option><option value="json">JSON</option></select></label>
+          <option value="markdown">Markdown</option><option value="json">JSON</option>
+          <option value="fields" selected>項目別</option></select></label>
           <button class="dpm-refresh" type="button">再取得</button>
           <button class="dpm-copy" type="button">クリップボードにコピー</button></div>
         <p class="dpm-status" aria-live="polite"></p>
       </section>`;
     const textarea = overlay.querySelector("textarea");
+    const fields = overlay.querySelector(".dpm-fields");
     const select = overlay.querySelector("select");
     const status = overlay.querySelector(".dpm-status");
+    const copyAllButton = overlay.querySelector(".dpm-copy");
     let metadata = collectMetadata();
+    const copyText = async (text) => {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const temporary = document.createElement("textarea");
+        temporary.value = text;
+        overlay.appendChild(temporary);
+        temporary.select();
+        document.execCommand("copy");
+        temporary.remove();
+      }
+    };
     const render = () => {
+      const showsFields = select.value === "fields";
+      textarea.hidden = showsFields;
+      fields.hidden = !showsFields;
+      copyAllButton.hidden = showsFields;
+      if (showsFields) {
+        fields.replaceChildren();
+        for (const [key, value] of filledEntries(metadata)) {
+          const row = document.createElement("div");
+          row.className = "dpm-field";
+          const label = document.createElement("div");
+          label.className = "dpm-field-label";
+          label.textContent = FIELD_NAMES[key];
+          const displayedValue = String(displayFieldValue(key, value));
+          const valueElement = document.createElement("div");
+          valueElement.className = "dpm-field-value";
+          valueElement.textContent = displayedValue;
+          const copyButton = document.createElement("button");
+          copyButton.type = "button";
+          copyButton.className = "dpm-field-copy";
+          copyButton.textContent = "コピー";
+          copyButton.addEventListener("click", async () => {
+            await copyText(displayedValue);
+            status.textContent = `${FIELD_NAMES[key]}をコピーしました。`;
+          });
+          row.append(label, valueElement, copyButton);
+          fields.appendChild(row);
+        }
+        return;
+      }
       textarea.value = formatMetadata(metadata, select.value);
     };
     const close = () => overlay.remove();
@@ -268,13 +353,8 @@
       render();
       status.textContent = "ページから再取得しました。";
     });
-    overlay.querySelector(".dpm-copy").addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(textarea.value);
-      } catch {
-        textarea.select();
-        document.execCommand("copy");
-      }
+    copyAllButton.addEventListener("click", async () => {
+      await copyText(textarea.value);
       status.textContent = "コピーしました。";
     });
     overlay.querySelector(".dpm-close").addEventListener("click", close);
@@ -286,7 +366,7 @@
     });
     document.body.appendChild(overlay);
     render();
-    textarea.focus();
+    select.focus();
   };
 
   const launcher = document.createElement("button");
@@ -295,8 +375,8 @@
   launcher.textContent = "メタデータを表示";
   launcher.style.cssText = `
     position: fixed;
+    top: 20px;
     right: 20px;
-    bottom: 20px;
     z-index: 2147483646;
     padding: 11px 16px;
     border: 0;
@@ -311,6 +391,14 @@
   document.body.appendChild(launcher);
 
   let previousUrl = location.href;
+  const updateLauncherPosition = () => {
+    const contentPane = document.querySelector('[data-content-pane="true"]');
+    const contentHeader = contentPane?.previousElementSibling?.matches("header")
+      ? contentPane.previousElementSibling
+      : null;
+    const headerBottom = contentHeader?.getBoundingClientRect().bottom ?? 0;
+    launcher.style.top = `${Math.max(20, Math.ceil(headerBottom) + 12)}px`;
+  };
   const updateLauncherVisibility = () => {
     const isWorkPage =
       WORK_ID_PATTERN.test(decodeURIComponent(location.href)) ||
@@ -318,12 +406,15 @@
     launcher.hidden = !isWorkPage;
   };
 
+  window.addEventListener("resize", updateLauncherPosition);
+  updateLauncherPosition();
   updateLauncherVisibility();
   setInterval(() => {
     if (location.href !== previousUrl) {
       previousUrl = location.href;
       document.getElementById(ROOT_ID)?.remove();
     }
+    updateLauncherPosition();
     updateLauncherVisibility();
   }, 500);
 })();

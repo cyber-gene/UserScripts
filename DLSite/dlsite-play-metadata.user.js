@@ -288,7 +288,8 @@
         #${ROOT_ID} .dpm-field-copy:hover { border-color:#2563eb; color:#fff; background:#2563eb }
         #${ROOT_ID} .dpm-field-copy:focus-visible { outline:3px solid rgba(37,99,235,.3);
           outline-offset:2px }
-        #${ROOT_ID} .dpm-field-copy:active { transform:translateY(1px); background:#dbeafe }
+        #${ROOT_ID} .dpm-field-copy:active { color:#1d4ed8; background:#dbeafe;
+          transform:translateY(1px) }
         #${ROOT_ID} .dpm-field-copy.is-copied { border-color:#059669; color:#fff; background:#059669 }
         #${ROOT_ID} .dpm-field-copy-feedback { position:absolute; top:50%; right:calc(100% + 8px);
           z-index:1; padding:3px 7px; border-radius:5px; color:#065f46;
@@ -362,7 +363,7 @@
           const copyFeedback = document.createElement("span");
           copyFeedback.className = "dpm-field-copy-feedback";
           copyFeedback.textContent = "Copied!";
-          copyFeedback.setAttribute("aria-live", "polite");
+          copyFeedback.setAttribute("aria-hidden", "true");
           let feedbackTimer;
           copyButton.addEventListener("click", async () => {
             await copyText(displayedValue);

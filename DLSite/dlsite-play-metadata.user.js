@@ -67,12 +67,21 @@
     const text = clean(value);
     if (!text) return null;
     const japaneseDate = text.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日/);
-    if (japaneseDate) {
-      const [, year, month, day] = japaneseDate;
-      return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
-    }
-    const date = new Date(text);
-    return Number.isNaN(date.getTime()) ? null : date;
+    const numericDate = text.match(
+      /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:$|[T\s])/,
+    );
+    const parts = japaneseDate || numericDate;
+    if (!parts) return null;
+    const [, yearText, monthText, dayText] = parts;
+    const year = Number(yearText);
+    const month = Number(monthText);
+    const day = Number(dayText);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+      ? date
+      : null;
   };
   const readMeta = (selector) =>
     clean(document.querySelector(selector)?.content);
@@ -391,11 +400,16 @@
   document.body.appendChild(launcher);
 
   let previousUrl = location.href;
-  const updateLauncherPosition = () => {
+  let observedContentHeader = null;
+  const getContentHeader = () => {
     const contentPane = document.querySelector('[data-content-pane="true"]');
-    const contentHeader = contentPane?.previousElementSibling?.matches("header")
+    return contentPane?.previousElementSibling?.matches("header")
       ? contentPane.previousElementSibling
       : null;
+  };
+  const updateLauncherPosition = () => {
+    if (launcher.hidden) return;
+    const contentHeader = getContentHeader();
     const headerBottom = contentHeader?.getBoundingClientRect().bottom ?? 0;
     launcher.style.top = `${Math.max(20, Math.ceil(headerBottom) + 12)}px`;
   };
@@ -405,16 +419,28 @@
       Boolean(document.querySelector('h1 a[href*="/work/=/product_id/"]'));
     launcher.hidden = !isWorkPage;
   };
+  const contentHeaderObserver = new ResizeObserver(() => {
+    updateLauncherPosition();
+  });
+  const updateContentHeaderObserver = () => {
+    const contentHeader = getContentHeader();
+    if (contentHeader === observedContentHeader) return;
+    contentHeaderObserver.disconnect();
+    observedContentHeader = contentHeader;
+    if (contentHeader) contentHeaderObserver.observe(contentHeader);
+    updateLauncherPosition();
+  };
 
   window.addEventListener("resize", updateLauncherPosition);
-  updateLauncherPosition();
   updateLauncherVisibility();
+  updateContentHeaderObserver();
+  updateLauncherPosition();
   setInterval(() => {
     if (location.href !== previousUrl) {
       previousUrl = location.href;
       document.getElementById(ROOT_ID)?.remove();
     }
-    updateLauncherPosition();
     updateLauncherVisibility();
-  }, 500);
+    updateContentHeaderObserver();
+  }, 1000);
 })();

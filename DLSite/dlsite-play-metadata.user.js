@@ -91,7 +91,9 @@
     if (!element) return "";
     const items = unique(
       [...element.querySelectorAll("a, button, li, [role='listitem']")]
-        .filter((item) => !item.querySelector("a, button, li, [role='listitem']"))
+        .filter(
+          (item) => !item.querySelector("a, button, li, [role='listitem']"),
+        )
         .map((item) => item.textContent),
     );
     return items.length ? items.join("、") : clean(element.textContent);
@@ -175,7 +177,8 @@
     const dlsiteLink = document.querySelector(DLSITE_WORK_LINK_SELECTOR);
     const heading =
       dlsiteLink?.closest("h1") || document.querySelector("main h1, h1");
-    const root = heading?.closest("main, article") || document.querySelector("main");
+    const root =
+      heading?.closest("main, article") || document.querySelector("main");
     return { dlsiteLink, heading, root: root || document };
   };
 

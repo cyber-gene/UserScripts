@@ -87,6 +87,15 @@
   };
   const readMeta = (selector) =>
     clean(document.querySelector(selector)?.content);
+  const readListValue = (element) => {
+    if (!element) return "";
+    const items = unique(
+      [...element.querySelectorAll("a, button, li, [role='listitem']")]
+        .filter((item) => !item.querySelector("a, button, li, [role='listitem']"))
+        .map((item) => item.textContent),
+    );
+    return items.length ? items.join("、") : clean(element.textContent);
+  };
 
   const readJsonLd = () => {
     const result = {};
@@ -139,9 +148,9 @@
       if (!label || label.length > 30) continue;
       let value = "";
       if (labelElement.matches("dt, th")) {
-        value = clean(labelElement.nextElementSibling?.textContent);
+        value = readListValue(labelElement.nextElementSibling);
       } else if (labelElement.nextElementSibling) {
-        value = clean(labelElement.nextElementSibling.textContent);
+        value = readListValue(labelElement.nextElementSibling);
       }
       if ((!value || value === label) && labelElement.parentElement) {
         value = clean(
@@ -198,9 +207,13 @@
       )?.textContent,
     );
     const genres = unique(
-      [...root.querySelectorAll('a[href*="?genre="]')].map(
-        (link) => link.textContent,
-      ),
+      [
+        ...root.querySelectorAll(
+          'a[href*="genre" i], a[href*="category" i], a[href*="work_type" i]',
+        ),
+      ]
+        .map((link) => link.textContent)
+        .filter((value) => !LABELS.genre.includes(clean(value).toLowerCase())),
     );
     const badges = unique(
       [...root.querySelectorAll('ul[class*="_icons_"] li')].map(

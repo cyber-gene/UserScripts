@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DLSite Play Metadata Copier
 // @namespace    https://cybergene.dev/
-// @version      1.1.0
+// @version      1.2.0
 // @description  Displays metadata from a DLSite Play work page in an easy-to-copy format
 // @match        https://play.dlsite.com/*
 // @grant        none
@@ -17,6 +17,8 @@
   const ROOT_ID = "dlsite-play-metadata-copier";
   const LAUNCHER_ID = `${ROOT_ID}-launcher`;
   const WORK_ID_PATTERN = /\b(?:RJ|BJ|VJ|RE|BE|VE)\d{6,}\b/i;
+  const DLSITE_WORK_LINK_SELECTOR =
+    'a[href*="/work/=/product_id/"], a[href*="product_id/"]';
   const LABELS = {
     circle: [
       "サークル",
@@ -119,9 +121,18 @@
 
   const readLabelledValues = (root) => {
     const result = {};
-    for (const labelElement of root.querySelectorAll(
-      "dt, th, [class*='label']",
-    )) {
+    const aliases = Object.values(LABELS).flat();
+    const candidates = [
+      ...root.querySelectorAll("dt, th, [class*='label'], [class*='Label']"),
+      ...[...root.querySelectorAll("p, span, div")].filter((element) => {
+        if (element.children.length > 0) return false;
+        const text = clean(element.textContent)
+          .replace(/[：:]$/, "")
+          .toLowerCase();
+        return aliases.some((alias) => text === alias);
+      }),
+    ];
+    for (const labelElement of new Set(candidates)) {
       const label = clean(labelElement.textContent)
         .replace(/[：:]$/, "")
         .toLowerCase();
@@ -129,7 +140,10 @@
       let value = "";
       if (labelElement.matches("dt, th")) {
         value = clean(labelElement.nextElementSibling?.textContent);
-      } else if (labelElement.parentElement) {
+      } else if (labelElement.nextElementSibling) {
+        value = clean(labelElement.nextElementSibling.textContent);
+      }
+      if ((!value || value === label) && labelElement.parentElement) {
         value = clean(
           [...labelElement.parentElement.childNodes]
             .filter((node) => node !== labelElement)
@@ -149,14 +163,11 @@
   };
 
   const findWorkElements = () => {
-    const heading = [...document.querySelectorAll("h1")].find((element) =>
-      element.querySelector('a[href*="/work/=/product_id/"]'),
-    );
-    let root = heading?.parentElement;
-    while (root && !root.querySelector('a[href*="?genre="]')) {
-      root = root.parentElement;
-    }
-    return { heading, root: root || document };
+    const dlsiteLink = document.querySelector(DLSITE_WORK_LINK_SELECTOR);
+    const heading =
+      dlsiteLink?.closest("h1") || document.querySelector("main h1, h1");
+    const root = heading?.closest("main, article") || document.querySelector("main");
+    return { dlsiteLink, heading, root: root || document };
   };
 
   const findText = (root, pattern) =>
@@ -166,23 +177,25 @@
 
   const collectMetadata = () => {
     const structured = readJsonLd();
-    const { heading, root } = findWorkElements();
+    const { dlsiteLink, heading, root } = findWorkElements();
     const labelled = readLabelledValues(root);
-    const dlsiteLink = heading?.querySelector('a[href*="/work/=/product_id/"]');
     const dlsiteUrl = dlsiteLink?.href || "";
     const workId = (
       decodeURIComponent(location.href).match(WORK_ID_PATTERN)?.[0] ||
       dlsiteUrl.match(WORK_ID_PATTERN)?.[0] ||
       ""
     ).toUpperCase();
+    const pageTitle = document.title.replace(/\s*[-|｜]\s*DLsite Play.*$/i, "");
     const title = clean(
-      heading?.textContent ||
-        structured.title ||
+      structured.title ||
+        heading?.textContent ||
         readMeta('meta[property="og:title"]') ||
-        document.title.replace(/\s*[-|｜]\s*DLsite Play.*$/i, ""),
+        (/^DLsite Play$/i.test(pageTitle) ? "" : pageTitle),
     );
     const circle = clean(
-      heading?.nextElementSibling?.querySelector('a[href*="?q="]')?.textContent,
+      (heading?.parentElement || root).querySelector(
+        'a[href*="?q="], a[href*="/maker/"], a[href*="/circle/"]',
+      )?.textContent,
     );
     const genres = unique(
       [...root.querySelectorAll('a[href*="?genre="]')].map(
@@ -445,7 +458,7 @@
   const updateLauncherVisibility = () => {
     const isWorkPage =
       WORK_ID_PATTERN.test(decodeURIComponent(location.href)) ||
-      Boolean(document.querySelector('h1 a[href*="/work/=/product_id/"]'));
+      Boolean(document.querySelector(DLSITE_WORK_LINK_SELECTOR));
     launcher.hidden = !isWorkPage;
   };
   const contentHeaderObserver = new ResizeObserver(() => {

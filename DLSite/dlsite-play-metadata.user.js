@@ -174,11 +174,28 @@
   };
 
   const findWorkElements = () => {
-    const dlsiteLink = document.querySelector(DLSITE_WORK_LINK_SELECTOR);
     const heading =
-      dlsiteLink?.closest("h1") || document.querySelector("main h1, h1");
+      document.querySelector("main h1") || document.querySelector("h1");
     const root =
       heading?.closest("main, article") || document.querySelector("main");
+    const currentWorkId =
+      decodeURIComponent(location.href).match(WORK_ID_PATTERN)?.[0] || "";
+    const links = [...document.querySelectorAll(DLSITE_WORK_LINK_SELECTOR)];
+    const matchingLink = currentWorkId
+      ? links.find((link) =>
+          new RegExp(`\\b${currentWorkId}\\b`, "i").test(
+            decodeURIComponent(link.href),
+          ),
+        )
+      : null;
+    let nearbyLink = null;
+    let container = heading;
+    while (container && container !== root) {
+      nearbyLink = container.querySelector(DLSITE_WORK_LINK_SELECTOR);
+      if (nearbyLink) break;
+      container = container.parentElement;
+    }
+    const dlsiteLink = matchingLink || nearbyLink;
     return { dlsiteLink, heading, root: root || document };
   };
 
@@ -472,9 +489,9 @@
     launcher.style.top = `${Math.max(20, Math.ceil(headerBottom) + 12)}px`;
   };
   const updateLauncherVisibility = () => {
-    const isWorkPage =
-      WORK_ID_PATTERN.test(decodeURIComponent(location.href)) ||
-      Boolean(document.querySelector(DLSITE_WORK_LINK_SELECTOR));
+    const hasWorkId = WORK_ID_PATTERN.test(decodeURIComponent(location.href));
+    const { dlsiteLink, heading } = findWorkElements();
+    const isWorkPage = hasWorkId || Boolean(heading && dlsiteLink);
     launcher.hidden = !isWorkPage;
   };
   const contentHeaderObserver = new ResizeObserver(() => {

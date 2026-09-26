@@ -205,7 +205,8 @@
       .find((text) => pattern.test(text)) || "";
 
   const readCircle = (heading, root) => {
-    let container = heading?.parentElement || root;
+    let container =
+      heading && root.contains(heading) ? heading.parentElement : root;
     while (container) {
       const circle = clean(
         container.querySelector(

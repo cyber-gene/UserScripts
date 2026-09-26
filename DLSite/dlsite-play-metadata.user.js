@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DLSite Play Metadata Copier
 // @namespace    https://cybergene.dev/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Displays metadata from a DLSite Play work page in an easy-to-copy format
 // @match        https://play.dlsite.com/*
 // @grant        none
@@ -204,6 +204,21 @@
       .map((element) => clean(element.textContent))
       .find((text) => pattern.test(text)) || "";
 
+  const readCircle = (heading, root) => {
+    let container = heading?.parentElement || root;
+    while (container) {
+      const circle = clean(
+        container.querySelector(
+          'a[href*="?q="], a[href*="/maker/"], a[href*="/circle/"]',
+        )?.textContent,
+      );
+      if (circle) return circle;
+      if (container === root) break;
+      container = container.parentElement;
+    }
+    return "";
+  };
+
   const collectMetadata = () => {
     const structured = readJsonLd();
     const { dlsiteLink, heading, root } = findWorkElements();
@@ -221,11 +236,7 @@
         readMeta('meta[property="og:title"]') ||
         (/^DLsite Play$/i.test(pageTitle) ? "" : pageTitle),
     );
-    const circle = clean(
-      (heading?.parentElement || root).querySelector(
-        'a[href*="?q="], a[href*="/maker/"], a[href*="/circle/"]',
-      )?.textContent,
-    );
+    const circle = readCircle(heading, root);
     const genres = unique(
       [
         ...root.querySelectorAll(

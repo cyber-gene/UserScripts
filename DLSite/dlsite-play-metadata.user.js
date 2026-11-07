@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DLSite Play Metadata Copier
 // @namespace    https://cybergene.dev/
-// @version      1.2.1
+// @version      1.2.2
 // @description  Displays metadata from a DLSite Play work page in an easy-to-copy format
 // @match        https://play.dlsite.com/*
 // @grant        none
@@ -151,6 +151,12 @@
       let value = "";
       if (labelElement.matches("dt, th")) {
         value = readListValue(labelElement.nextElementSibling);
+      } else if (
+        labelElement.parentElement?.matches("li") &&
+        labelElement.nextElementSibling?.matches("a")
+      ) {
+        // DLsite Play lists names as sibling links in the same metadata row.
+        value = readListValue(labelElement.parentElement);
       } else if (labelElement.nextElementSibling) {
         value = readListValue(labelElement.nextElementSibling);
       }
